@@ -9,6 +9,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { v4 as uuidv4 } from "uuid";
 import type { OrderItem, Transaction } from "@/types";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

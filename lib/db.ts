@@ -1,122 +1,267 @@
 import fs from "fs";
 import path from "path";
-import { v4 as uuidv4 } from "uuid";
 import type { User, Table, MenuItem, Transaction } from "@/types";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+// Use /tmp in serverless environments, otherwise use project data directory
+const isVercel = process.env.VERCEL === "1";
+const DATA_DIR = isVercel ? "/tmp/data" : path.join(process.cwd(), "data");
+
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const TABLES_FILE = path.join(DATA_DIR, "tables.json");
 const MENU_FILE = path.join(DATA_DIR, "menu.json");
 const TRANSACTIONS_FILE = path.join(DATA_DIR, "transactions.json");
 
 // Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-
-// Initialize files if they don't exist
-function initFile(filePath: string, defaultValue: any) {
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2));
+function ensureDataDir() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch (error) {
+    console.error("Error creating data directory:", error);
   }
 }
 
-initFile(USERS_FILE, [
-  {
-    id: "1",
-    username: "admin",
-    password: "admin123",
-    role: "admin",
-    name: "Admin",
-  },
-  {
-    id: "2",
-    username: "waiter1",
-    password: "waiter123",
-    role: "waiter",
-    name: "Waiter 1",
-  },
-]);
+// Initialize files if they don't exist
+function initFile(filePath: string, defaultValue: unknown) {
+  try {
+    ensureDataDir();
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2));
+    }
+  } catch (error) {
+    console.error(`Error initializing file ${filePath}:`, error);
+  }
+}
 
-initFile(TABLES_FILE, []);
-initFile(MENU_FILE, [
-  {
-    id: "1",
-    nameEn: "Turkish Coffee",
-    nameAr: "قهوة تركية",
-    price: 15,
-    category: "coffee",
-  },
-  {
-    id: "2",
-    nameEn: "Espresso",
-    nameAr: "إسبريسو",
-    price: 12,
-    category: "coffee",
-  },
-  {
-    id: "3",
-    nameEn: "Black Tea",
-    nameAr: "شاي أسود",
-    price: 8,
-    category: "tea",
-  },
-  {
-    id: "4",
-    nameEn: "Green Tea",
-    nameAr: "شاي أخضر",
-    price: 8,
-    category: "tea",
-  },
-  {
-    id: "5",
-    nameEn: "Shisha (Single)",
-    nameAr: "شيشة (واحدة)",
-    price: 50,
-    category: "shisha",
-  },
-  {
-    id: "6",
-    nameEn: "Shisha (Double)",
-    nameAr: "شيشة (مزدوجة)",
-    price: 80,
-    category: "shisha",
-  },
-]);
-initFile(TRANSACTIONS_FILE, []);
+// Lazy initialization - only initialize when needed
+function initializeDefaults() {
+  const defaultUsers = [
+    {
+      id: "1",
+      username: "admin",
+      password: "admin123",
+      role: "admin",
+      name: "Admin",
+    },
+    {
+      id: "2",
+      username: "waiter1",
+      password: "waiter123",
+      role: "waiter",
+      name: "Waiter 1",
+    },
+  ];
 
-// Read functions
+  const defaultMenu = [
+    {
+      id: "1",
+      nameEn: "Turkish Coffee",
+      nameAr: "قهوة تركية",
+      price: 15,
+      category: "coffee",
+    },
+    {
+      id: "2",
+      nameEn: "Espresso",
+      nameAr: "إسبريسو",
+      price: 12,
+      category: "coffee",
+    },
+    {
+      id: "3",
+      nameEn: "Black Tea",
+      nameAr: "شاي أسود",
+      price: 8,
+      category: "tea",
+    },
+    {
+      id: "4",
+      nameEn: "Green Tea",
+      nameAr: "شاي أخضر",
+      price: 8,
+      category: "tea",
+    },
+    {
+      id: "5",
+      nameEn: "Shisha (Single)",
+      nameAr: "شيشة (واحدة)",
+      price: 50,
+      category: "shisha",
+    },
+    {
+      id: "6",
+      nameEn: "Shisha (Double)",
+      nameAr: "شيشة (مزدوجة)",
+      price: 80,
+      category: "shisha",
+    },
+  ];
+
+  try {
+    initFile(USERS_FILE, defaultUsers);
+    initFile(TABLES_FILE, []);
+    initFile(MENU_FILE, defaultMenu);
+    initFile(TRANSACTIONS_FILE, []);
+  } catch (error) {
+    console.error("Error initializing default files:", error);
+  }
+}
+
+// Read functions with error handling
 export function readUsers(): User[] {
-  return JSON.parse(fs.readFileSync(USERS_FILE, "utf-8"));
+  try {
+    ensureDataDir();
+    if (!fs.existsSync(USERS_FILE)) {
+      initializeDefaults();
+    }
+    const data = fs.readFileSync(USERS_FILE, "utf-8");
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error reading users:", error);
+    // Return default users if file doesn't exist
+    return [
+      {
+        id: "1",
+        username: "admin",
+        password: "admin123",
+        role: "admin",
+        name: "Admin",
+      },
+      {
+        id: "2",
+        username: "waiter1",
+        password: "waiter123",
+        role: "waiter",
+        name: "Waiter 1",
+      },
+    ];
+  }
 }
 
 export function readTables(): Table[] {
-  return JSON.parse(fs.readFileSync(TABLES_FILE, "utf-8"));
+  try {
+    ensureDataDir();
+    if (!fs.existsSync(TABLES_FILE)) {
+      initFile(TABLES_FILE, []);
+    }
+    return JSON.parse(fs.readFileSync(TABLES_FILE, "utf-8"));
+  } catch (error) {
+    console.error("Error reading tables:", error);
+    return [];
+  }
 }
 
 export function readMenu(): MenuItem[] {
-  return JSON.parse(fs.readFileSync(MENU_FILE, "utf-8"));
+  try {
+    ensureDataDir();
+    if (!fs.existsSync(MENU_FILE)) {
+      initializeDefaults();
+    }
+    const data = fs.readFileSync(MENU_FILE, "utf-8");
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error reading menu:", error);
+    // Return default menu if file doesn't exist
+    return [
+      {
+        id: "1",
+        nameEn: "Turkish Coffee",
+        nameAr: "قهوة تركية",
+        price: 15,
+        category: "coffee",
+      },
+      {
+        id: "2",
+        nameEn: "Espresso",
+        nameAr: "إسبريسو",
+        price: 12,
+        category: "coffee",
+      },
+      {
+        id: "3",
+        nameEn: "Black Tea",
+        nameAr: "شاي أسود",
+        price: 8,
+        category: "tea",
+      },
+      {
+        id: "4",
+        nameEn: "Green Tea",
+        nameAr: "شاي أخضر",
+        price: 8,
+        category: "tea",
+      },
+      {
+        id: "5",
+        nameEn: "Shisha (Single)",
+        nameAr: "شيشة (واحدة)",
+        price: 50,
+        category: "shisha",
+      },
+      {
+        id: "6",
+        nameEn: "Shisha (Double)",
+        nameAr: "شيشة (مزدوجة)",
+        price: 80,
+        category: "shisha",
+      },
+    ];
+  }
 }
 
 export function readTransactions(): Transaction[] {
-  return JSON.parse(fs.readFileSync(TRANSACTIONS_FILE, "utf-8"));
+  try {
+    ensureDataDir();
+    if (!fs.existsSync(TRANSACTIONS_FILE)) {
+      initFile(TRANSACTIONS_FILE, []);
+    }
+    return JSON.parse(fs.readFileSync(TRANSACTIONS_FILE, "utf-8"));
+  } catch (error) {
+    console.error("Error reading transactions:", error);
+    return [];
+  }
 }
 
-// Write functions
+// Write functions with error handling
 export function writeUsers(users: User[]) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  try {
+    ensureDataDir();
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  } catch (error) {
+    console.error("Error writing users:", error);
+    throw error;
+  }
 }
 
 export function writeTables(tables: Table[]) {
-  fs.writeFileSync(TABLES_FILE, JSON.stringify(tables, null, 2));
+  try {
+    ensureDataDir();
+    fs.writeFileSync(TABLES_FILE, JSON.stringify(tables, null, 2));
+  } catch (error) {
+    console.error("Error writing tables:", error);
+    throw error;
+  }
 }
 
 export function writeMenu(menu: MenuItem[]) {
-  fs.writeFileSync(MENU_FILE, JSON.stringify(menu, null, 2));
+  try {
+    ensureDataDir();
+    fs.writeFileSync(MENU_FILE, JSON.stringify(menu, null, 2));
+  } catch (error) {
+    console.error("Error writing menu:", error);
+    throw error;
+  }
 }
 
 export function writeTransactions(transactions: Transaction[]) {
-  fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(transactions, null, 2));
+  try {
+    ensureDataDir();
+    fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(transactions, null, 2));
+  } catch (error) {
+    console.error("Error writing transactions:", error);
+    throw error;
+  }
 }
 
 // Helper functions

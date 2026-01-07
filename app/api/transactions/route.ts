@@ -13,6 +13,9 @@ import {
   parseISO,
 } from "date-fns";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user) {

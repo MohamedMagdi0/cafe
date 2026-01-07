@@ -4,6 +4,9 @@ import { getCurrentUser } from "@/lib/auth";
 import { v4 as uuidv4 } from "uuid";
 import type { Table } from "@/types";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) {
