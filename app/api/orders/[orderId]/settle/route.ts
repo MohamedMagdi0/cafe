@@ -25,13 +25,20 @@ export async function POST(
   const tables = readTables();
 
   let found = false;
-  for (const table of tables) {
+  let updatedTable = null;
+
+  for (let i = 0; i < tables.length; i++) {
+    const table = tables[i];
     const orderIndex = table.orders.findIndex((o) => o.id === orderId);
     if (orderIndex !== -1) {
       const order = table.orders[orderIndex];
       if (!order.settled) {
-        order.settled = true;
-        order.settledAt = new Date().toISOString();
+        // Update the order
+        table.orders[orderIndex] = {
+          ...order,
+          settled: true,
+          settledAt: new Date().toISOString(),
+        };
         table.updatedAt = new Date().toISOString();
 
         // Create income transaction
@@ -48,6 +55,12 @@ export async function POST(
         transactions.push(newTransaction);
         writeTransactions(transactions);
 
+        updatedTable = table;
+        found = true;
+        break;
+      } else {
+        // Order already settled, return the table anyway
+        updatedTable = table;
         found = true;
         break;
       }
@@ -58,6 +71,12 @@ export async function POST(
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
+  // Write the updated tables
   writeTables(tables);
-  return NextResponse.json({ success: true });
+
+  return NextResponse.json({
+    success: true,
+    table: updatedTable,
+    orderId,
+  });
 }

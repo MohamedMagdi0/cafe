@@ -65,30 +65,40 @@ export async function PUT(
 
   // Settle entire table
   if (body.settle === true) {
-    tables[tableIndex].isSettled = true;
-    tables[tableIndex].settledAt = new Date().toISOString();
-    tables[tableIndex].orders.forEach((order) => {
+    const table = tables[tableIndex];
+
+    // Calculate unsettled total BEFORE marking as settled
+    const unsettledTotal = table.orders
+      .filter((order) => !order.settled)
+      .reduce((sum, order) => sum + order.price * order.quantity, 0);
+
+    // Mark table as settled
+    table.isSettled = true;
+    table.settledAt = new Date().toISOString();
+
+    // Update all orders that aren't settled
+    table.orders = table.orders.map((order) => {
       if (!order.settled) {
-        order.settled = true;
-        order.settledAt = new Date().toISOString();
+        return {
+          ...order,
+          settled: true,
+          settledAt: new Date().toISOString(),
+        };
       }
+      return order;
     });
-    tables[tableIndex].updatedAt = new Date().toISOString();
 
-    // Create income transaction
-    const total = tables[tableIndex].orders.reduce(
-      (sum, order) => sum + order.price * order.quantity,
-      0
-    );
+    table.updatedAt = new Date().toISOString();
 
-    if (total > 0) {
+    // Create income transaction only for unsettled items
+    if (unsettledTotal > 0) {
       const { readTransactions, writeTransactions } = await import("@/lib/db");
       const transactions = readTransactions();
       const newTransaction: Transaction = {
         id: uuidv4(),
         type: "income",
-        amount: total,
-        description: `Table ${tables[tableIndex].label} settlement`,
+        amount: unsettledTotal,
+        description: `Table ${table.label} settlement`,
         tableId: id,
         userId: user.id,
         createdAt: new Date().toISOString(),

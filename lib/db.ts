@@ -144,8 +144,13 @@ export function readTables(): Table[] {
     ensureDataDir();
     if (!fs.existsSync(TABLES_FILE)) {
       initFile(TABLES_FILE, []);
+      return [];
     }
-    return JSON.parse(fs.readFileSync(TABLES_FILE, "utf-8"));
+    const data = fs.readFileSync(TABLES_FILE, "utf-8");
+    if (!data || data.trim() === "") {
+      return [];
+    }
+    return JSON.parse(data);
   } catch (error) {
     console.error("Error reading tables:", error);
     return [];
@@ -215,8 +220,13 @@ export function readTransactions(): Transaction[] {
     ensureDataDir();
     if (!fs.existsSync(TRANSACTIONS_FILE)) {
       initFile(TRANSACTIONS_FILE, []);
+      return [];
     }
-    return JSON.parse(fs.readFileSync(TRANSACTIONS_FILE, "utf-8"));
+    const data = fs.readFileSync(TRANSACTIONS_FILE, "utf-8");
+    if (!data || data.trim() === "") {
+      return [];
+    }
+    return JSON.parse(data);
   } catch (error) {
     console.error("Error reading transactions:", error);
     return [];
@@ -227,7 +237,12 @@ export function readTransactions(): Transaction[] {
 export function writeUsers(users: User[]) {
   try {
     ensureDataDir();
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    const data = JSON.stringify(users, null, 2);
+    fs.writeFileSync(USERS_FILE, data, "utf-8");
+    // Verify write succeeded
+    if (!fs.existsSync(USERS_FILE)) {
+      throw new Error("File write verification failed");
+    }
   } catch (error) {
     console.error("Error writing users:", error);
     throw error;
@@ -237,7 +252,12 @@ export function writeUsers(users: User[]) {
 export function writeTables(tables: Table[]) {
   try {
     ensureDataDir();
-    fs.writeFileSync(TABLES_FILE, JSON.stringify(tables, null, 2));
+    const data = JSON.stringify(tables, null, 2);
+    fs.writeFileSync(TABLES_FILE, data, "utf-8");
+    // Verify write succeeded
+    if (!fs.existsSync(TABLES_FILE)) {
+      throw new Error("File write verification failed");
+    }
   } catch (error) {
     console.error("Error writing tables:", error);
     throw error;
@@ -247,7 +267,12 @@ export function writeTables(tables: Table[]) {
 export function writeMenu(menu: MenuItem[]) {
   try {
     ensureDataDir();
-    fs.writeFileSync(MENU_FILE, JSON.stringify(menu, null, 2));
+    const data = JSON.stringify(menu, null, 2);
+    fs.writeFileSync(MENU_FILE, data, "utf-8");
+    // Verify write succeeded
+    if (!fs.existsSync(MENU_FILE)) {
+      throw new Error("File write verification failed");
+    }
   } catch (error) {
     console.error("Error writing menu:", error);
     throw error;
@@ -257,7 +282,12 @@ export function writeMenu(menu: MenuItem[]) {
 export function writeTransactions(transactions: Transaction[]) {
   try {
     ensureDataDir();
-    fs.writeFileSync(TRANSACTIONS_FILE, JSON.stringify(transactions, null, 2));
+    const data = JSON.stringify(transactions, null, 2);
+    fs.writeFileSync(TRANSACTIONS_FILE, data, "utf-8");
+    // Verify write succeeded
+    if (!fs.existsSync(TRANSACTIONS_FILE)) {
+      throw new Error("File write verification failed");
+    }
   } catch (error) {
     console.error("Error writing transactions:", error);
     throw error;

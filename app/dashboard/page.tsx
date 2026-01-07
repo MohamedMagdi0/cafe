@@ -134,17 +134,19 @@ export default function DashboardPage() {
       });
 
       if (res.ok) {
-        await loadData();
-        if (selectedTable) {
-          const updatedTable = tables.find((t) =>
-            t.orders.some((o) => o.id === orderId)
+        const data = await res.json();
+        // Update tables with the returned table data
+        if (data.table) {
+          setTables((prevTables) =>
+            prevTables.map((t) => (t.id === data.table.id ? data.table : t))
           );
-          if (updatedTable) {
-            const tableRes = await fetch(`/api/tables/${updatedTable.id}`);
-            const tableData = await tableRes.json();
-            setSelectedTable(tableData.table);
+          // Update selected table if it matches
+          if (selectedTable && selectedTable.id === data.table.id) {
+            setSelectedTable(data.table);
           }
         }
+        // Reload data to ensure consistency
+        await loadData();
       }
     } catch (error) {
       console.error("Error settling item:", error);
@@ -160,6 +162,14 @@ export default function DashboardPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        // Update tables with the returned table data
+        if (data.table) {
+          setTables((prevTables) =>
+            prevTables.map((t) => (t.id === data.table.id ? data.table : t))
+          );
+        }
+        // Reload data to ensure consistency
         await loadData();
         setSelectedTable(null);
       }
