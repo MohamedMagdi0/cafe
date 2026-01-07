@@ -1,36 +1,160 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cafe Management System
+
+A full-stack cafe management web application built with Next.js, supporting multiple languages (English and Arabic), table management, order tracking, and financial analytics.
+
+## Features
+
+### User Roles
+
+- **Admin**: Full access to all features including analytics, menu management, and outcome tracking
+- **Waiter**: Can manage tables, take orders, and settle bills
+
+### Core Functionality
+
+- **Table Management**: Create tables with custom labels, track orders per table
+- **Order Taking**: Add multiple orders (tea, coffee, shisha, etc.) to tables with quantities
+- **Bill Settlement**:
+  - Settle individual items (marks them as paid with visual strikethrough)
+  - Settle entire table bills
+  - Reopen settled tables for new guests
+- **Multi-language Support**: Switch between English and Arabic for the entire interface
+- **Financial Tracking**:
+  - Daily income tracking from table settlements
+  - Outcome tracking for purchases/expenses
+  - Net profit calculation (income in green, outcome in red)
+  - Retrospective analytics (today, this week, this month)
+
+### Admin Features
+
+- View comprehensive analytics dashboard
+- Add/edit menu items (with bilingual names)
+- Track income and outcomes
+- View transaction history
+- Period-based reporting (day/week/month)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Installation
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Default Login Credentials
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Admin:**
 
-## Learn More
+- Username: `admin`
+- Password: `admin123`
 
-To learn more about Next.js, take a look at the following resources:
+**Waiter:**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Username: `waiter1`
+- Password: `waiter123`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Usage
 
-## Deploy on Vercel
+### For Waiters
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Login** with waiter credentials
+2. **Add Tables**: Click "Add Table" and enter a custom label
+3. **Take Orders**: Click on an active table, select menu items, and add quantities
+4. **Settle Items**: Mark individual items as settled (they'll be crossed out)
+5. **Settle Table**: Mark entire table as settled when all items are paid
+6. **Reopen Table**: After settlement, reopen the table for new guests
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### For Admins
+
+1. **Login** with admin credentials
+2. **Dashboard**: View daily statistics and manage tables
+3. **Analytics Page**: Access detailed financial reports
+4. **Menu Management**: Add new items with English and Arabic names
+5. **Outcome Tracking**: Record expenses and purchases
+6. **Period Selection**: View data for today, this week, or this month
+
+## Project Structure
+
+```
+cafe/
+├── app/
+│   ├── api/          # API routes
+│   ├── admin/        # Admin dashboard
+│   ├── dashboard/    # Main dashboard
+│   ├── login/        # Login page
+│   └── page.tsx      # Root page (redirects)
+├── components/       # React components
+├── lib/             # Utilities (auth, db, i18n)
+├── types/           # TypeScript types
+└── data/            # JSON data storage (auto-created)
+```
+
+## Data Storage
+
+The application uses JSON files for data storage (located in `/data` directory):
+
+- `users.json` - User accounts
+- `tables.json` - Table and order data
+- `menu.json` - Menu items
+- `transactions.json` - Financial transactions
+
+**Note**: For production use, consider migrating to a proper database (PostgreSQL, MongoDB, etc.)
+
+## Language Support
+
+The application supports:
+
+- **English** (default)
+- **Arabic** (RTL layout)
+
+Switch languages using the language switcher in the header. Language preference is saved in localStorage.
+
+## Technologies Used
+
+- **Next.js 16** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **date-fns** - Date manipulation
+- **uuid** - Unique ID generation
+
+## Development
+
+### Build for Production
+
+```bash
+npm run build
+npm start
+```
+
+### Linting
+
+```bash
+npm run lint
+```
+
+## Future Enhancements
+
+- Database integration (PostgreSQL/MongoDB)
+- User authentication with JWT tokens
+- Receipt printing
+- Inventory management
+- Employee shift tracking
+- Advanced reporting and charts
+
+## License
+
+This project is open source and available for use.
